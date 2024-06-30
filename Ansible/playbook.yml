@@ -1,4 +1,4 @@
-- name: all hosts install
+- name: Configuring Debian 10 and PostgreSQL 16
   hosts: host1
   become: true
   tasks:
@@ -11,7 +11,7 @@
           - postgresql-common
           - python3-pip
         state: present
-    - name: Add PostgreSQL APT repository to sources list
+    - name: Add PostgreSQL 16 APT repository to sources list
       expect:
         command: sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
         responses: 
@@ -30,13 +30,13 @@
       pip:
         name: psycopg2-binary
         executable: pip3
-    - name: postgresql.conf configuration
+    - name: Configuration postgresql.conf 
       blockinfile:
         path: "/etc/postgresql/{{ hostvars[inventory_hostname]['POSTGRES_VERSION'] }}/main/postgresql.conf"
         block: |
           listen_addresses = '*'
           port = {{ hostvars[inventory_hostname]['DB_PORT'] }}
-    - name: pg_hba.conf master configuration
+    - name: Configuration pg_hba.conf
       blockinfile:
         path: "/etc/postgresql/{{ hostvars[inventory_hostname]['POSTGRES_VERSION'] }}/main/pg_hba.conf"
         block: |
@@ -58,7 +58,7 @@
         name: "{{ hostvars[inventory_hostname]['DB_DATABASE'] }}"
         login_user: postgres
         state: present
-    - name: Grant privileges to PostgreSQL user
+    - name: Grant privileges to PostgreSQL user on database
       become_user: postgres
       postgresql_privs:
         db: "{{ hostvars[inventory_hostname]['DB_DATABASE'] }}"
