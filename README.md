@@ -22,7 +22,7 @@ The Python HTTP server is a simple application that returns `"200 OK"` when acce
 
 The Dockerfile specifies the base image (Python 3.11), installs the required packages and dependencies, copies the HTTP server code to the container, and exposes port 8080 for access from outside the container.
 
-The Docker container is configured to automatically start the HTTP server when the container is started. The container can be accessed at `http://localhost:8000/healthz` (or the appropriate IP address and port) to verify that it is running correctly.
+The Docker container is configured to automatically start the HTTP server when the container is started. The container can be accessed at `http://localhost:8080/healthz` (or the appropriate IP address and port) to verify that it is running correctly.
 ### Usage
 #### To use the Ansible playbook follow the following steps:
 - copy the project to your machine using the command `git clone https://github.com/K4vabanga/PT_START_INT-34.git`
@@ -35,6 +35,6 @@ To connect to a configured PostgreSQL server, use the following command `psql -h
 - copy the project to your machine using the command `git clone https://github.com/K4vabanga/PT_START_INT-34.git`
 - move to the project using the command `cd PT_START_INT-34/CI_CD`
 - Assemble the docker image using the command `docker build .`
-- Run the docker container from the assembled image using the command `docker run -p 8000:8000 .`
+- Run the docker container from the assembled image using the command `docker run -p 8080:8080 .`
 
-You can access the HTTP server to make sure it is working correctly using the following command `curl http://localhost:8000/healthz`
+You can access the HTTP server to make sure it is working correctly using the following command `curl http://localhost:8080/healthz`
