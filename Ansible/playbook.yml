@@ -1,0 +1,69 @@
+- name: all hosts install
+  hosts: host1
+  become: true
+  tasks:
+    - name: Update apt packages
+      apt:
+        update_cache: yes
+    - name: Install postgresql-common and pip3
+      apt:
+        name: 
+          - postgresql-common
+          - python3-pip
+        state: present
+    - name: Add PostgreSQL APT repository to sources list
+      expect:
+        command: sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+        responses: 
+          'Press Enter to continue, or Ctrl-C to abort.': '\n'
+    - name: Postgresql instalation
+      package:
+        name: postgresql-{{ hostvars[inventory_hostname]['POSTGRES_VERSION'] }}
+        update_cache: yes
+    - name: Install Python dependencies
+      apt:
+        name:
+          - python3-dev
+          - libpq-dev
+        state: present
+    - name: Install psycopg2
+      pip:
+        name: psycopg2-binary
+        executable: pip3
+    - name: postgresql.conf configuration
+      blockinfile:
+        path: "/etc/postgresql/{{ hostvars[inventory_hostname]['POSTGRES_VERSION'] }}/main/postgresql.conf"
+        block: |
+          listen_addresses = '*'
+          port = {{ hostvars[inventory_hostname]['DB_PORT'] }}
+    - name: pg_hba.conf master configuration
+      blockinfile:
+        path: "/etc/postgresql/{{ hostvars[inventory_hostname]['POSTGRES_VERSION'] }}/main/pg_hba.conf"
+        block: |
+          local all postgres peer
+          host {{ hostvars[inventory_hostname]['DB_DATABASE'] }} {{ hostvars[inventory_hostname]['DB_USER'] }} 0.0.0.0/0 trust
+    - name: Applying changes
+      service:
+        name: postgresql
+        state: restarted
+    - name: Create PostgreSQL user
+      become_user: postgres
+      postgresql_user:
+        name: "{{ hostvars[inventory_hostname]['DB_USER'] }}"
+        password: "{{ hostvars[inventory_hostname]['DB_PASSWORD'] }}"
+        state: present
+    - name: Create PostgreSQL database
+      become_user: postgres
+      postgresql_db:
+        name: "{{ hostvars[inventory_hostname]['DB_DATABASE'] }}"
+        login_user: postgres
+        state: present
+    - name: Grant privileges to PostgreSQL user
+      become_user: postgres
+      postgresql_privs:
+        db: "{{ hostvars[inventory_hostname]['DB_DATABASE'] }}"
+        type: database
+        privs: ALL
+        role: "{{ hostvars[inventory_hostname]['DB_USER'] }}"
+        state: present
+
